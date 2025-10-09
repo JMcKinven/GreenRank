@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "name": "Asda",
+    "sector": "Food/Grocery",
+    "sector_id": 2,
+    "metrics": {
+      "energy_use": 60,
+      "shipping_distance": 37,
+      "materials_score": 42,
+      "food_waste": 65
+      },
+    "sector_score": 72,
+    "sector_rank": 3,
+    "unfiltered_rank": 65
+  },
+  {
+    "id": 2,
+    "name": "Primark",
+    "sector": "Fashion",
+    "sector_id": 1,
+    "metrics": {
+      "energy_use": 70,
+      "shipping_distance": 76,
+      "materials_score": 65
+      },
+    "sector_score": 15,
+    "sector_rank": 32,
+    "unfiltered_rank": 87
+    }
+  }
+]
