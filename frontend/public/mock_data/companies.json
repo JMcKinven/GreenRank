@@ -28,5 +28,35 @@
     "sector_rank": 32,
     "unfiltered_rank": 87
     }
+  },
+  {
+    "id": 3,
+    "name": "Reedins Construction",
+    "sector":   "Construction and Heavy industry",
+    "sector_id": 5,
+    "metrics": {
+      "energy_use": 56,
+      "shipping_distance": 42,
+      "materials_score": 72
+      },
+    "sector_score": 12,
+    "sector_rank": 7,
+    "unfiltered_rank": 93
+  },
+  {
+    "id": 4,
+    "name": "HSBC",
+    "sector": "Finance & Insurance",
+    "sector_id": 4,
+    "metrics": {
+      "energy_use": 46,
+      "data_storage": 15,
+      "greenwashing_score": 23
+    },
+    "sector_score": 76,
+    "sector_rank": 3,
+    "unfiltered_rank": 23
   }
+
+
 ]
