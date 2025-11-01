@@ -13,3 +13,9 @@ npm-debug.log
 
 # OS
 .DS_Store
+
+node_modules/
+.env
+/dist/
+/build/
+.vs/
