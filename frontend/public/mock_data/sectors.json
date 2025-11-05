@@ -1,0 +1,7 @@
+[
+  {"id":  1, "name":  "Fashion", "description": "Textiles, Fast fashion, clothing, apparel"},
+  {"id":  2, "name": "Food/Grocery","description":  "Retailers, Distributors, Producers"},
+  {"id":  3, "name": "Manufacturing", "description": "Electronics, consumer devices, appliances"},
+  {"id":  4, "name": "Finance & Insurance", "description":  "Banking, Investment, Insurance"},
+  {"id":  5, "name":  "Heavy Industry & Construction", "description": "Construction, Heavy Industry"}
+]
