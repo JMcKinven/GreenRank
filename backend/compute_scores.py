@@ -1,16 +1,3 @@
-#!/usr/bin/env python3
-# backend/compute_scores.py
-"""
-Compute sustainability scores for all companies.
-
-Scoring Logic:
-1. For each metric, normalize company value against sector distribution using z-scores
-2. invert_score=FALSE means HIGHER is BETTER (renewable %, waste recycled %)
-   invert_score=TRUE means LOWER is BETTER (not used in our data, but supported)
-3. Compute weighted average of metric scores per sector
-4. Calculate global percentile ranking
-"""
-
 import math
 import statistics
 from datetime import datetime
@@ -18,96 +5,130 @@ from sqlalchemy import and_
 from models import db, Sector, Metric, SectorMetric, Company, CompanyMetric, Score
 from app import create_app
 
+
 def normal_cdf(z):
     """Standard normal cumulative distribution function"""
     return 0.5 * (1 + math.erf(z / math.sqrt(2)))
 
-def compute_metric_score(company_value, sector_values, invert_score=False):
+
+# Define which metrics should be normalized by turnover (absolute values)
+# Percentages and ratios should NOT be normalized
+ABSOLUTE_METRICS = {
+    1,  # Operational_energy (MWh/Year)
+    3,  # C02_emissions_yearly (tCO2e)
+    6,  # Shipping_emmisions (tCO2e/km) - already normalized, keep as is
+    9,  # food_waste (Tonne/year)
+    10,  # Water_use (cubic m/year)
+    13,  # shipping_distance (km)
+    14,  # Energy_intensity (MWh/tonne) - already intensity, keep as is
+    15,  # waste_landfill (tonne.year)
+    17,  # Air_pollutant_emmisions (kg/year)
+    18,  # Embedded_carbon_per_project (tCO2e/proj) - already normalized
+}
+
+
+def normalize_value(metric_id, value, company_turnover):
     """
-    Compute 0-100 score for a metric value relative to sector.
-    
+    Normalize metric value by company turnover for absolute metrics.
+    Returns value per £1M turnover for fair comparison across company sizes.
+    """
+    if metric_id in ABSOLUTE_METRICS and company_turnover and company_turnover > 0:
+        # Return value per £1M turnover
+        return value / company_turnover
+    else:
+        # Return raw value for percentages and already-normalized metrics
+        return value
+
+
+def compute_metric_score(company_value, comparison_values, invert_score=False):
+    """
+    Compute 0-100 score for a metric value relative to comparison set.
+
     Args:
-        company_value: The company's value for this metric
-        sector_values: List of all values for this metric in the sector
+        company_value: The company's (normalized) value for this metric
+        comparison_values: List of all (normalized) values to compare against
         invert_score: If FALSE, higher is better. If TRUE, lower is better.
-    
+
     Returns:
         Score from 0-100, where 50 is average
     """
-    # Handle empty sector data
-    if not sector_values or all(v is None for v in sector_values):
-        return 50.0  # Neutral if no comparison data
-    
+    # Handle empty comparison data
+    if not comparison_values or all(v is None for v in comparison_values):
+        return 50.0
+
     # Convert to float and filter None
-    vals = [float(v) for v in sector_values if v is not None]
-    
+    vals = [float(v) for v in comparison_values if v is not None]
+
     if len(vals) == 0:
         return 50.0
-    
+
     mean = statistics.mean(vals)
-    
-    # Use sample standard deviation (more appropriate for smaller samples)
+
+    # Use sample standard deviation
     if len(vals) > 1:
         std = statistics.stdev(vals)
     else:
         std = 0.0
-    
-    # If all values are identical, return 50 (average)
+
+    # If all values are identical, return 50
     if std == 0.0:
         return 50.0
-    
+
     # Calculate z-score
     z = (company_value - mean) / std
-    
+
     # Apply inversion logic
     # invert_score=FALSE: higher is better (renewable %, recycling %)
     # invert_score=TRUE: lower is better (emissions, waste)
     if invert_score:
         z = -z  # Flip so lower values get higher scores
-    
+
     # Convert z-score to 0-100 scale using normal CDF
     score = normal_cdf(z) * 100.0
-    
+
     # Clamp to 0-100 range
     return max(0.0, min(100.0, score))
+
 
 def compute_all_scores():
     """
     Compute scores for all companies and save to database.
     """
     print("=" * 80)
-    print("COMPUTING SUSTAINABILITY SCORES")
+    print("COMPUTING SUSTAINABILITY SCORES (TURNOVER-ADJUSTED)")
     print("=" * 80)
-    
-    all_company_sector_scores = {}  # company_id -> sector_score
+
+    all_company_sector_scores = {}
     companies_processed = set()
-    
+
+    # Build turnover lookup
+    company_turnover = {}
+    for comp in Company.query.all():
+        company_turnover[comp.company_id] = float(comp.turnover) if comp.turnover else None
+
     # Process each sector
     sectors = Sector.query.all()
-    
+
     for sector in sectors:
-        print(f"\n📊 Processing Sector {sector.id}: {sector.sector_name}")
+        print(f"\nProcessing Sector {sector.id}: {sector.sector_name}")
         print("-" * 80)
-        
-        # Get metrics for this sector with their weights
+
         sec_metrics = SectorMetric.query.filter_by(sector_id=sector.id).all()
-        
+
         if not sec_metrics:
-            print(f"   ⚠️  No metrics defined for this sector")
+            print(f"No metrics defined for this sector")
             continue
-        
+
         metric_ids = [sm.metric_id for sm in sec_metrics]
         weights_map = {sm.metric_id: float(sm.weight) for sm in sec_metrics}
-        
-        # Verify weights sum to ~1.0
+
         total_weight = sum(weights_map.values())
-        print(f"   Total weight: {total_weight:.4f} (should be ~1.0)")
-        
-        # Gather sector-wide values for each metric
-        sector_values = {}  # metric_id -> [values]
-        
+        print(f"   Total weight: {total_weight:.4f}")
+
+        # Gather sector-wide NORMALIZED values for each metric
+        sector_values = {}
+
         for m_id in metric_ids:
-            # Get all company metric values for this metric within the sector
             rows = db.session.query(CompanyMetric).join(Company).filter(
                 and_(
                     Company.sector_id == sector.id,
@@ -115,126 +136,212 @@ def compute_all_scores():
                     CompanyMetric.value.isnot(None)
                 )
             ).all()
-            
-            vals = [float(r.value) for r in rows]
-            sector_values[m_id] = vals
-            
+
+            # Normalize values by company turnover
+            normalized_vals = []
+            for r in rows:
+                turnover = company_turnover.get(r.company_id)
+                if turnover:
+                    normalized_val = normalize_value(m_id, float(r.value), turnover)
+                    normalized_vals.append(normalized_val)
+
+            sector_values[m_id] = normalized_vals
+
             metric = Metric.query.get(m_id)
-            print(f"   Metric {m_id:2d} ({metric.metric_name:30s}): {len(vals):3d} values")
-        
+            normalization = " (intensity)" if m_id in ABSOLUTE_METRICS else " (raw)"
+            print(f"   Metric {m_id:2d} ({metric.metric_name:30s}): {len(normalized_vals):3d} values{normalization}")
+
         # Score each company in the sector
         companies_in_sector = Company.query.filter_by(sector_id=sector.id).all()
         print(f"\n   Scoring {len(companies_in_sector)} companies...")
-        
+
         for comp in companies_in_sector:
             weighted_sum = 0.0
             weight_sum_present = 0.0
-            metric_scores_debug = []
-            
+
             for m_id in metric_ids:
-                # Get company's value for this metric
                 cm = CompanyMetric.query.filter_by(
                     company_id=comp.company_id,
                     metric_id=m_id
                 ).first()
-                
+
                 if cm and cm.value is not None:
+                    turnover = company_turnover.get(comp.company_id)
+                    if not turnover:
+                        continue
+
                     metric = Metric.query.get(m_id)
-                    val = float(cm.value)
-                    
-                    # Compute score for this metric
+                    normalized_val = normalize_value(m_id, float(cm.value), turnover)
+
+                    # Compute score for this normalized metric
                     m_score = compute_metric_score(
-                        val,
+                        normalized_val,
                         sector_values[m_id],
                         invert_score=bool(metric.invert_score)
                     )
-                    
-                    # Apply weight
+
                     w = weights_map.get(m_id, 0.0)
                     weighted_sum += m_score * w
                     weight_sum_present += w
-                    
-                    metric_scores_debug.append(f"{metric.metric_name[:20]:20s} = {m_score:5.1f}")
-            
-            # Calculate final sector score
+
             if weight_sum_present > 0:
                 sector_score = weighted_sum / weight_sum_present
             else:
                 sector_score = None
-            
+
             all_company_sector_scores[comp.company_id] = sector_score
             companies_processed.add(comp.company_id)
-            
-            # Debug output for first few companies
-            if len(companies_processed) <= 3:
-                print(f"\n   {comp.name[:40]:40s} Score: {sector_score:.2f if sector_score else 'N/A'}")
-                for debug_line in metric_scores_debug[:3]:
-                    print(f"      {debug_line}")
-    
+
     print("\n" + "=" * 80)
-    print("COMPUTING GLOBAL PERCENTILE RANKINGS")
+    print("COMPUTING GLOBAL SCORES (TURNOVER-ADJUSTED, CROSS-SECTOR)")
     print("=" * 80)
-    
-    # Compute global percentiles
-    scored_items = [(cid, sc) for cid, sc in all_company_sector_scores.items() if sc is not None]
-    
-    if not scored_items:
-        print("❌ No scores computed. Check that company_metrics data exists.")
-        return
-    
-    scores_list = [sc for cid, sc in scored_items]
-    sorted_scores = sorted(scores_list)
-    
-    def percentile(score):
-        """Calculate what percentile this score is (0-100)"""
-        count_less_or_equal = sum(1 for s in sorted_scores if s <= score)
-        return (count_less_or_equal / len(sorted_scores)) * 100.0
-    
-    print(f"\nScore distribution:")
-    print(f"   Min:    {min(scores_list):.2f}")
-    print(f"   25th:   {sorted_scores[len(scores_list)//4]:.2f}")
-    print(f"   Median: {sorted_scores[len(scores_list)//2]:.2f}")
-    print(f"   75th:   {sorted_scores[3*len(scores_list)//4]:.2f}")
-    print(f"   Max:    {max(scores_list):.2f}")
-    
-    # Delete old scores and insert new ones
+
+    # Get all unique metrics
+    all_metrics_used = set()
+    for sm in SectorMetric.query.all():
+        all_metrics_used.add(sm.metric_id)
+
+    print(f"\nComparing companies globally across {len(all_metrics_used)} metrics...")
+
+    # Gather GLOBAL normalized values
+    global_metric_values = {}
+
+    for m_id in all_metrics_used:
+        rows = db.session.query(CompanyMetric).filter(
+            CompanyMetric.metric_id == m_id,
+            CompanyMetric.value.isnot(None)
+        ).all()
+
+        normalized_vals = []
+        for r in rows:
+            turnover = company_turnover.get(r.company_id)
+            if turnover:
+                normalized_val = normalize_value(m_id, float(r.value), turnover)
+                normalized_vals.append(normalized_val)
+
+        if normalized_vals:
+            global_metric_values[m_id] = normalized_vals
+            metric = Metric.query.get(m_id)
+            normalization = " (intensity)" if m_id in ABSOLUTE_METRICS else " (raw)"
+            print(f"   Metric {m_id:2d} ({metric.metric_name:30s}): {len(normalized_vals):3d} values{normalization}")
+
+    # Compute global scores
+    all_company_global_scores = {}
+
+    print(f"\nScoring {len(companies_processed)} companies globally...")
+
+    for comp in Company.query.all():
+        company_metrics = CompanyMetric.query.filter_by(company_id=comp.company_id).all()
+
+        if not company_metrics:
+            all_company_global_scores[comp.company_id] = None
+            continue
+
+        turnover = company_turnover.get(comp.company_id)
+        if not turnover:
+            all_company_global_scores[comp.company_id] = None
+            continue
+
+        metric_scores = []
+
+        for cm in company_metrics:
+            if cm.value is None or cm.metric_id not in global_metric_values:
+                continue
+
+            metric = Metric.query.get(cm.metric_id)
+            normalized_val = normalize_value(cm.metric_id, float(cm.value), turnover)
+
+            # Score this metric GLOBALLY
+            m_score = compute_metric_score(
+                normalized_val,
+                global_metric_values[cm.metric_id],
+                invert_score=bool(metric.invert_score)
+            )
+
+            metric_scores.append(m_score)
+
+        if metric_scores:
+            all_company_global_scores[comp.company_id] = sum(metric_scores) / len(metric_scores)
+        else:
+            all_company_global_scores[comp.company_id] = None
+
+    # Display score distributions
+    print("\n" + "-" * 80)
+    print("SCORE DISTRIBUTIONS")
+    print("-" * 80)
+
+    sector_scores = [s for s in all_company_sector_scores.values() if s is not None]
+    if sector_scores:
+        sorted_sector = sorted(sector_scores)
+        print(f"\nSector Scores:")
+        print(f"   Min:    {min(sector_scores):.2f}")
+        print(f"   25th:   {sorted_sector[len(sector_scores) // 4]:.2f}")
+        print(f"   Median: {sorted_sector[len(sector_scores) // 2]:.2f}")
+        print(f"   75th:   {sorted_sector[3 * len(sector_scores) // 4]:.2f}")
+        print(f"   Max:    {max(sector_scores):.2f}")
+
+    global_scores = [s for s in all_company_global_scores.values() if s is not None]
+    if global_scores:
+        sorted_global = sorted(global_scores)
+        print(f"\nGlobal Scores:")
+        print(f"   Min:    {min(global_scores):.2f}")
+        print(f"   25th:   {sorted_global[len(global_scores) // 4]:.2f}")
+        print(f"   Median: {sorted_global[len(global_scores) // 2]:.2f}")
+        print(f"   75th:   {sorted_global[3 * len(global_scores) // 4]:.2f}")
+        print(f"   Max:    {max(global_scores):.2f}")
+
+    # Save to database
     print("\n" + "=" * 80)
     print("SAVING SCORES TO DATABASE")
     print("=" * 80)
-    
-    Score.query.delete()  # Clear old scores
-    
+
+    Score.query.delete()
+
     scores_saved = 0
-    for cid, sec_score in all_company_sector_scores.items():
-        if sec_score is not None:
-            global_pct = percentile(sec_score)
-        else:
-            global_pct = None
-        
+    for cid in companies_processed:
         new_score = Score(
             company_id=cid,
-            sector_score=sec_score,
-            global_score=global_pct,
+            sector_score=all_company_sector_scores.get(cid),
+            global_score=all_company_global_scores.get(cid),
             last_calculated=datetime.utcnow()
         )
         db.session.add(new_score)
         scores_saved += 1
-    
+
     db.session.commit()
-    
-    print(f"\n✅ Computed and saved scores for {scores_saved} companies")
+
+    print(f"\nComputed and saved scores for {scores_saved} companies")
     print("=" * 80)
-    
-    # Show top 10
-    print("\n🏆 TOP 10 COMPANIES (by sector score):")
+
+    # Show top 20 by GLOBAL score
+    print("\n TOP 20 COMPANIES (by GLOBAL score - turnover-adjusted cross-sector):")
     print("-" * 80)
-    
-    top_scores = Score.query.order_by(Score.sector_score.desc()).limit(10).all()
+
+    top_scores = Score.query.order_by(Score.global_score.desc()).limit(20).all()
     for i, score in enumerate(top_scores, 1):
         comp = Company.query.get(score.company_id)
-        print(f"{i:2d}. {comp.name[:40]:40s} Score: {float(score.sector_score):6.2f} (Percentile: {float(score.global_score):5.1f})")
-    
+        sector = Sector.query.get(comp.sector_id)
+        global_val = float(score.global_score) if score.global_score else 0
+        sector_val = float(score.sector_score) if score.sector_score else 0
+        turnover_val = float(comp.turnover) if comp.turnover else 0
+        print(
+            f"{i:2d}. {comp.name[:30]:30s} | {sector.sector_name:15s} | Turnover: £{turnover_val:6.2f}B | Global: {global_val:5.2f}")
+
+    print("\n TOP 20 COMPANIES (by SECTOR score):")
+    print("-" * 80)
+
+    top_sector_scores = Score.query.order_by(Score.sector_score.desc()).limit(20).all()
+    for i, score in enumerate(top_sector_scores, 1):
+        comp = Company.query.get(score.company_id)
+        sector = Sector.query.get(comp.sector_id)
+        sector_val = float(score.sector_score) if score.sector_score else 0
+        global_val = float(score.global_score) if score.global_score else 0
+        turnover_val = float(comp.turnover) if comp.turnover else 0
+        print(
+            f"{i:2d}. {comp.name[:30]:30s} | {sector.sector_name:15s} | Turnover: £{turnover_val:6.2f}B | Sector: {sector_val:5.2f}")
+
     print("=" * 80)
+
 
 if __name__ == "__main__":
     app = create_app()
