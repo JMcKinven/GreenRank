@@ -1,9 +1,3 @@
-# backend/config.py
-"""
-Configuration for Flask app and database connection.
-Uses environment variables with sensible defaults.
-"""
-
 import os
 from dotenv import load_dotenv
 

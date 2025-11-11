@@ -1,8 +1,3 @@
-# backend/app.py
-"""
-Flask REST API for GreenRank sustainability scoring system.
-Provides endpoints for companies, sectors, metrics, and scores.
-"""
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS

@@ -1,14 +1,3 @@
-#!/usr/bin/env python3
-# backend/db/prepare_csvs.py
-"""
-Prepare CSVs for database import by:
-1. Cleaning empty columns
-2. Ensuring proper formatting
-3. Setting default weights for sector_metrics
-4. Using the populated company_metrics from our research
-
-NOTE: Type definition rows (SERIAL PK, VARCHAR, etc.) should already be removed from source CSVs
-"""
 
 import pandas as pd
 import os

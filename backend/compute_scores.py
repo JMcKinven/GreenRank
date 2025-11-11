@@ -64,7 +64,7 @@ def compute_metric_score(company_value, comparison_values, invert_score=False):
 
     mean = statistics.mean(vals)
 
-    # Use sample standard deviation
+    # Use standard deviation
     if len(vals) > 1:
         std = statistics.stdev(vals)
     else:
@@ -77,7 +77,7 @@ def compute_metric_score(company_value, comparison_values, invert_score=False):
     # Calculate z-score
     z = (company_value - mean) / std
 
-    # Apply inversion logic
+    # Apply inversion
     # invert_score=FALSE: higher is better (renewable %, recycling %)
     # invert_score=TRUE: lower is better (emissions, waste)
     if invert_score:
