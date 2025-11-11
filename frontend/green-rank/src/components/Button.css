@@ -1,0 +1,26 @@
+/* Positioning the buttons outside of the certificate on the greyed-out area */
+.buttons-container {
+    position: absolute;
+    right: calc(10px + (100% - 70%) / 2); /* Position buttons centered between the screen's right edge and the certificate */
+    top: 50%; /* Vertically center */
+    transform: translateY(-50%); /* Center vertically */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1050; /* Make sure buttons are on top */
+}
+
+button {
+    padding: 15px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 32px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
