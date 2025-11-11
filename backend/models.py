@@ -1,9 +1,3 @@
-# backend/models.py
-"""
-SQLAlchemy models matching the actual CSV structure.
-CSVs are the source of truth.
-"""
-
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
