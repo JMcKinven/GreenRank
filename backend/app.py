@@ -228,7 +228,7 @@ def create_app():
     def get_global_leaderboard():
         """Get global leaderboard across all sectors"""
         try:
-            limit = request.args.get("limit", type=int, default=50)
+            limit = request.args.get("limit", type=int, default=290)
             
             # Get top scores with company info
             scores = Score.query.order_by(Score.sector_score.desc()).limit(limit).all()
