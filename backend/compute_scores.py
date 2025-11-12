@@ -29,14 +29,17 @@ ABSOLUTE_METRICS = {
 
 def normalize_value(metric_id, value, company_turnover):
     """
-    Normalize metric value by company turnover for absolute metrics.
-    Returns value per £1M turnover for fair comparison across company sizes.
+    Normalize metric value by log(turnover) for absolute metrics.
     """
     if metric_id in ABSOLUTE_METRICS and company_turnover and company_turnover > 0:
-        # Return value per £1M turnover
-        return value / company_turnover
+        # Convert billions to millions for more reasonable log values
+        turnover_millions = company_turnover * 1000
+        # Use log base 10 + 1 to avoid log(0)
+        log_scale = math.log10(turnover_millions + 1)
+        # Return value normalized by log of turnover
+        return value / log_scale
     else:
-        # Return raw value for percentages and already-normalized metrics
+        # Return raw value for percentages
         return value
 
 

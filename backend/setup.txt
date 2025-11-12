@@ -1,0 +1,39 @@
+# 1. Navigate to backend
+cd GreenRank/backend
+
+# 2. Install PostgreSQL
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+sudo systemctl start postgresql
+
+# 3. Create database and user
+sudo -u postgres psql << 'EOF'
+CREATE USER greenrank_user WITH PASSWORD 'greenrank_pass';
+CREATE DATABASE greenrank OWNER greenrank_user;
+GRANT ALL PRIVILEGES ON DATABASE greenrank TO greenrank_user;
+\c greenrank
+GRANT ALL PRIVILEGES ON SCHEMA public TO greenrank_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO greenrank_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO greenrank_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO greenrank_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO greenrank_user;
+\q
+EOF
+
+# 4. Import database
+chmod +x reset_database.sh
+./reset_database.sh
+
+# 5. Setup Python
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# 6. Copy env file
+cp .env.example .env
+
+# 7. Compute scores
+python3 compute_scores.py
+
+# 8. Start API
+python3 app.py
