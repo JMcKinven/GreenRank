@@ -10,7 +10,7 @@ export const Toggle = ({ handleChange, isChecked }) => {
                 onChange={handleChange}
                 checked={isChecked}
             /> 
-            <label htmlFor="check">Daek Mode</label>
+            <label htmlFor="check">Dark Mode</label>
         </div>
     );
 
