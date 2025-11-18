@@ -9,7 +9,7 @@ type Props = {
 };
 
 const SearchBar: React.FC<Props> = ({ id = "search", label, value, placeholder, onChange }) => (
-  <div>
+  <div className="search-bar">
     <label htmlFor={id}>{label}</label>
     <input
       id={id}

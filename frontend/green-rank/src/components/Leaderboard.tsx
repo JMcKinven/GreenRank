@@ -15,6 +15,29 @@ type Props = {
   filter: string; // 'all' or sector value
 };
 
+type ScoreBand = 'excellent' | 'good' | 'moderate' | 'poor';
+
+function getScoreBand(score: number): ScoreBand {
+  if (score >= 80) return 'excellent';
+  if (score >= 60) return 'good';
+  if (score >= 40) return 'moderate';
+  return 'poor';
+}
+
+function getScoreBandLabel(band: ScoreBand): string {
+  switch (band) {
+    case 'excellent':
+      return 'Excellent';
+    case 'good':
+      return 'Good';
+    case 'moderate':
+      return 'Moderate';
+    case 'poor':
+    default:
+      return 'Needs improvement';
+  }
+}
+
 function CompanyList({ search, sort, filter }: Props) {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +49,7 @@ useEffect(() => {
 
   async function fetchCompanies() {
     try {
-      const res = await fetch('http://localhost:5000/api/companies');
+      const res = await fetch('http://localhost:5001/api/leaderboard');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
@@ -37,7 +60,7 @@ useEffect(() => {
       const normalized: Company[] = rawList.map((r: any) => ({
         id: r.id ?? r.company_id ?? r.companyid ?? 0,
         name: r.name ?? r.company_name ?? '',
-        sustainability_score: Number(r.sustainability_score ?? r.score ?? 0),
+        sustainability_score: Number(r.global_score ?? r.sector_score ?? r.sustainability_score ?? r.score ?? 0),
         sector: r.sector ?? r.sector_name ?? '',
       }));
 
@@ -115,14 +138,28 @@ useEffect(() => {
           </tr>
         </thead>
         <tbody>
-          {processed.map((company, index) => (
-            <tr key={company.id} onClick={() => handleRowClick(company)}>
-              <td>{index + 1}</td>
-              <td>{company.name}</td>
-              <td>{company.sector}</td>
-              <td>{company.sustainability_score}</td>
-            </tr>
-          ))}
+  {processed.map((company, index) => {
+    const band = getScoreBand(company.sustainability_score ?? 0);
+    const label = getScoreBandLabel(band);
+
+    return (
+      <tr key={company.id} onClick={() => handleRowClick(company)}>
+        <td>{index + 1}</td>
+        <td>{company.name}</td>
+        <td>{company.sector}</td>
+        <td>
+          <span className="score-value">
+            {company.sustainability_score?.toFixed(1) ?? '—'}
+          </span>
+          {company.sustainability_score != null && (
+            <span className={`score-badge score-badge--${band}`}>
+              {label}
+            </span>
+          )}
+        </td>
+      </tr>
+    );
+  })}
         </tbody>
       </table>
 

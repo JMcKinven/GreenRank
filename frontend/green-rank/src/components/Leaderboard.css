@@ -1,53 +1,201 @@
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
+.company-list {
+  margin-top: 1.5rem;
+  padding: 1.25rem 1.25rem 1.5rem;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+  overflow-x: auto;
 }
 
-th, td {
-    padding: 12px;
-    text-align: left;
-    border: 1px solid #ddd;
+.company-list h2 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
 }
 
-th {
-    background-color: #4CAF50;
-    color: white;
+.company-list table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
 }
 
-tr:nth-child(even) {
-    background-color: #f2f2f2;
+.company-list thead th {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  padding: 0.75rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  background: linear-gradient(
+    to bottom,
+    var(--color-surface-muted),
+    var(--color-surface)
+  );
 }
 
-tr:hover {
-    background-color: #ddd;
+.company-list tbody td {
+  padding: 0.7rem 0.75rem;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
 }
 
-h2 {
-    text-align: center;
-    font-size: 2rem;
-    margin-bottom: 20px;
+.company-list tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.01);
 }
 
-tr {
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+.company-list tbody tr {
+  cursor: pointer;
+  transition: background-color 0.12s ease, transform 0.12s ease;
 }
 
-    tr:hover {
-        background-color: #c1e1c1; 
-    }
-
-td {
-    cursor: pointer;
+.company-list tbody tr:hover {
+  background: var(--color-accent-soft);
 }
 
+.company-list td:first-child {
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
 
-    td:hover {
-        background-color: #f9f9f9; 
-    }
+.company-list td:last-child {
+  font-variant-numeric: tabular-nums;
+}
 
+.score-value {
+  font-weight: 600;
+  margin-right: 0.4rem;
+}
 
-table {
-    border: 2px solid #000;
+.score-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.score-badge--excellent {
+  background: #d6f5e4;
+  color: #12562f;
+}
+
+.score-badge--good {
+  background: #e3f0ff;
+  color: #17427d;
+}
+
+.score-badge--moderate {
+  background: #fff3d6;
+  color: #8b5a00;
+}
+
+.score-badge--poor {.company-list {
+  max-width: 1120px;
+  margin: 1.5rem auto 0;
+  padding: 1.25rem 1.25rem 1.5rem;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+  overflow-x: auto;
+}
+
+.company-list h2 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.company-list table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+}
+
+.company-list thead th {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  padding: 0.75rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  background: linear-gradient(
+    to bottom,
+    var(--color-surface-muted),
+    var(--color-surface)
+  );
+}
+
+.company-list tbody td {
+  padding: 0.7rem 0.75rem;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.company-list tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.01);
+}
+
+.company-list tbody tr {
+  cursor: pointer;
+  transition: background-color 0.12s ease, transform 0.12s ease;
+}
+
+.company-list tbody tr:hover {
+  background: var(--color-accent-soft);
+}
+
+.company-list td:first-child {
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.company-list td:last-child {
+  font-variant-numeric: tabular-nums;
+}
+
+.score-value {
+  font-weight: 600;
+  margin-right: 0.4rem;
+}
+
+.score-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.score-badge--excellent {
+  background: #d6f5e4;
+  color: #12562f;
+}
+
+.score-badge--good {
+  background: #e3f0ff;
+  color: #17427d;
+}
+
+.score-badge--moderate {
+  background: #fff3d6;
+  color: #8b5a00;
+}
+
+.score-badge--poor {
+  background: #fde3e3;
+  color: #8b1f1f;
+}
+
+  background: #fde3e3;
+  color: #8b1f1f;
 }

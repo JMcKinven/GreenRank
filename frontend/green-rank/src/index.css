@@ -1,19 +1,97 @@
 :root {
-    --background-colour: #f6f6f6;
-    --foreground-colour: #4CAF50;
-    --primary-text-colour: #0a0a0a;
-    --secondary-text-colour: #ffffff;
-    --toggle-bg: #f0eb9d;
-    --toggle-fg: #ffd000;
+  --color-bg: #f3f7f4;
+  --color-bg-soft: #e6f2eb;
+  --color-surface: #ffffff;
+  --color-surface-muted: #e6efe9;
+  --color-accent: #18814a;
+  --color-accent-soft: #d7f0e1;
+  --color-text: #102418;
+  --color-text-muted: #5b7263;
+  --color-border: #d4e1d8;
+
+  --shadow-soft: 0 10px 25px rgba(0, 0, 0, 0.06);
+
+  --radius-lg: 1rem;
+  --radius-pill: 999px;
+
+  --focus-ring: 0 0 0 3px rgba(24, 129, 74, 0.4);
 }
 
 [data-theme="dark"] {
-    --background-colour: #0a0a0a;
-    --foreground-colour: #4CAF50;
-    --primary-text-colour: #f6f6f6;
-    --secondary-text-colour: #0a0a0a;
-    --toggle-bg: #f0eb9d;
-    --toggle-fg: #ffd000;
+  --color-bg: #101b15;
+  --color-bg-soft: #1a2921;
+  --color-surface: #151f19;
+  --color-surface-muted: #1f2f25;
+  --color-accent: #4cd386;
+  --color-accent-soft: #173c25;
+  --color-text: #f5fbf7;
+  --color-text-muted: #a3b8aa;
+  --color-border: #324638;
+  --shadow-soft: 0 10px 25px rgba(0, 0, 0, 0.7);
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: 4px;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+input[type="text"],
+input[type="search"],
+select {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+input[type="text"]::placeholder {
+  color: var(--color-text-muted);
+}
+
+input[type="text"]:focus-visible,
+select:focus-visible {
+  border-color: var(--color-accent);
+  box-shadow: var(--focus-ring);
 }
