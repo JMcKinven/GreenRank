@@ -1,24 +1,29 @@
 .certificate-container {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
 }
 
 .certificate {
-    width: 210mm; /* A4 size */
-    height: 297mm;
-    padding: 20mm;
-    border: 2px solid #333;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    font-family: 'Arial', sans-serif;
+  width: 210mm;
+  height: 297mm;
+  padding: 20mm;
+  border: 2px solid var(--color-border);
+  box-shadow: var(--shadow-soft);
+  background: #ffffff;
+  font-family: "Georgia", "Times New Roman", serif;
+  color: #222222;
 }
 
-h2 {
-    text-align: center;
-    margin-bottom: 20px;
+.certificate h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-p {
-    font-size: 18px;
-    margin: 10px 0;
+.certificate p {
+  font-size: 1rem;
+  margin: 0.5rem 0;
 }
