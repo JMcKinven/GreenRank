@@ -1,29 +1,111 @@
-.certificate-container {
-  margin-top: 1.5rem;
-  display: flex;
-  justify-content: center;
+
+.certificate-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+
 }
 
-.certificate {
-  width: 210mm;
-  height: 297mm;
-  padding: 20mm;
-  border: 2px solid var(--color-border);
-  box-shadow: var(--shadow-soft);
-  background: #ffffff;
-  font-family: "Georgia", "Times New Roman", serif;
-  color: #222222;
+.certificate-card {
+    width: auto;
+    height: calc(100vh - 40px); /* nearly full viewport height */
+    aspect-ratio: 210 / 297; /* portrait A4 */
+    background: #ddead1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
 }
 
-.certificate h2 {
-  text-align: center;
-  margin-bottom: 1.5rem;
-  font-size: 1.8rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+
+.certificate-content {
+    width: 80%; /* scale everything inside card */
+    height: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: #ddead1;
+    transform-origin: top left;
 }
 
-.certificate p {
-  font-size: 1rem;
-  margin: 0.5rem 0;
+.top-logo {
+    flex: 0 0 auto; /* don’t shrink or grow */
+    height: 50%; /* relative to .certificate-content height */
+    width: auto; /* maintain aspect ratio */
+    margin: -12% auto 0;
+}
+
+    .top-logo img {
+        height: 100%;
+        width: auto;
+        object-fit: contain;
+        display: block;
+    }
+
+
+
+
+.line1 {
+    transform: rotate(45deg);
+}
+
+.line2 {
+    transform: rotate(-45deg);
+}
+
+/* Labels Row */
+.info-row {
+    display: flex;
+    flex-direction: column; /* Stack labels vertically */
+    align-items: center; /* Center items horizontally */
+    justify-content: center; /* Center vertically (if needed) */
+    margin-top: 0; /* Adjust or remove top margin */
+    margin-bottom: 5%; /* Maintain some space at the bottom */
+}
+
+.info-label {
+    font-weight: bold;
+    font-size:2rem; /* Increase font size */
+    color: #1e3d1e;
+    margin-bottom: 8px; /* Increase space between labels */
+}
+
+
+    .info-label:last-child {
+        margin-bottom: 0; /* Remove margin from the last label */
+    }
+
+/* Score Ring */
+.score-ring {
+    width: 50%;
+    aspect-ratio: 1 / 1;
+    margin: 0 auto;
+    position: relative;
+}
+
+.progress circle {
+    fill: none;
+    stroke-width: 10;
+}
+
+.bg {
+    stroke: #d9e6d9;
+}
+
+.fg {
+    stroke: #2f4f2f;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    transition: stroke-dashoffset 0.5s ease;
+}
+
+.score-text {
+    font-size: 5em;
+    font-weight: bold;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #2f4f2f;
 }

@@ -6,7 +6,8 @@ type Company = {
   id: number;
   name: string;
   sustainability_score: number;
-  sector: string;
+    sector: string;
+    global_rank?: number;
 };
 
 type Props = {
@@ -16,6 +17,12 @@ type Props = {
 };
 
 type ScoreBand = 'excellent' | 'good' | 'moderate' | 'poor';
+
+function capitalize(str: string): string {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
 
 function getScoreBand(score: number): ScoreBand {
   if (score >= 80) return 'excellent';
@@ -49,7 +56,7 @@ useEffect(() => {
 
   async function fetchCompanies() {
     try {
-      const res = await fetch('http://localhost:5001/api/leaderboard');
+      const res = await fetch('http://localhost:5000/api/leaderboard');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
@@ -61,10 +68,18 @@ useEffect(() => {
         id: r.id ?? r.company_id ?? r.companyid ?? 0,
         name: r.name ?? r.company_name ?? '',
         sustainability_score: Number(r.global_score ?? r.sector_score ?? r.sustainability_score ?? r.score ?? 0),
-        sector: r.sector ?? r.sector_name ?? '',
+        sector: capitalize(r.sector ?? r.sector_name ?? ''),
       }));
 
-      if (!cancelled) setCompanies(normalized);
+        const ranked = [...normalized].sort(
+            (a, b) => (b.sustainability_score ?? 0) - (a.sustainability_score ?? 0)
+        );
+
+        ranked.forEach((c, i) => {
+            (c as any).global_rank = i + 1;
+        });
+
+      if (!cancelled) setCompanies(ranked);
     } catch (err) {
       console.error('Error fetching companies:', err);
       if (!cancelled) setCompanies([]); // don’t crash UI
@@ -144,7 +159,7 @@ useEffect(() => {
 
     return (
       <tr key={company.id} onClick={() => handleRowClick(company)}>
-        <td>{index + 1}</td>
+        <td>{company.global_rank}</td>
         <td>{company.name}</td>
         <td>{company.sector}</td>
         <td>

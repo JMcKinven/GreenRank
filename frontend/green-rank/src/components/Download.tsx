@@ -1,24 +1,37 @@
 import React from 'react';
-import { jsPDF } from 'jspdf';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
+type Company = {
+    name: string;
+    sector: string;
+    sustainability_score: number;
+    location?: string;
+};
 
 type DownloadButtonProps = {
-    company: {
-        name: string;
-        sector: string;
-        sustainability_score: number;
-    };
+    company: Company;
 };
 
 const DownloadButton: React.FC<DownloadButtonProps> = ({ company }) => {
-    const downloadPDF = () => {
-        const doc = new jsPDF();
-        doc.setFontSize(20);
-        doc.text('Certificate of Sustainability', 20, 30);
-        doc.setFontSize(16);
-        doc.text(`Company Name: ${company.name}`, 20, 50);
-        doc.text(`Sector: ${company.sector}`, 20, 60);
-        doc.text(`Sustainability Score: ${company.sustainability_score}`, 20, 70);
-        doc.save(`${company.name}_certificate.pdf`);
+    const downloadPDF = async () => {
+        const certificateElement = document.getElementById(`certificate-${company.name}`);
+        if (!certificateElement) {
+            alert('Certificate element not found!');
+            return;
+        }
+
+        const canvas = await html2canvas(certificateElement, { scale: 2, useCORS: true });
+        const imgData = canvas.toDataURL('image/png');
+
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'px',
+            format: [canvas.width, canvas.height],
+        });
+
+        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.save(`${company.name}_certificate.pdf`);
     };
 
     return <button onClick={downloadPDF}>Download Certificate as PDF</button>;

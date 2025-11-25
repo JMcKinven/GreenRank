@@ -1,39 +1,27 @@
-.buttons-container {
-  position: absolute;
-  right: calc(10px + (100% - 70%) / 2);
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  z-index: 1050;
-}
-
 .buttons-container button {
-  padding: 0.6rem 0.9rem;
-  background-color: var(--color-accent);
-  color: #ffffff;
-  border: none;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
-  transition: background-color 0.15s ease, transform 0.1s ease,
-    box-shadow 0.15s ease;
+    padding: 0.5em 1em;
+    background-color: var(--color-accent);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 0.25em 0.625em rgba(0, 0, 0, 0.18);
+    transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
 }
 
-.buttons-container button:hover {
-  background-color: #126338;
-  transform: translateY(-1px);
-}
+    .buttons-container button:hover {
+        background: var(--color-accent);
+        transform: translateY(-0.0625em);
+    }
 
-.buttons-container button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.24);
-}
+    .buttons-container button:active {
+        transform: translateY(0);
+        box-shadow: 0 0.125em 0.375em rgba(0, 0, 0, 0.24);
+    }
 
-.buttons-container button:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-}
+    .buttons-container button:focus-visible {
+        outline: none;
+        box-shadow: var(--focus-ring);
+    }

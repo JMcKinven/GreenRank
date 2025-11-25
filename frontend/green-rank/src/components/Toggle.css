@@ -1,60 +1,69 @@
+/* Toggle Container */
 .toggle-container {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  max-width: 1120px;
-  margin: 0 auto 0.5rem;
-  color: var(--color-text-muted);
-  font-size: 0.9rem;
+    display: flex;
+    align-items: center; /* Vertically align the toggle button */
+    gap: 0.5rem; /* Adjust space between the toggle and label */
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    margin: 0; /* Remove extra margin */
+    position: relative;
+    top: 8px; 
+    transform: translateY(3px);
 }
 
+/* The actual toggle button, make it inline */
 .toggle {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
+    opacity: 0; /* Make the toggle button visible */
+    pointer-events: auto; /* Allow interaction */
+    position: static; /* Remove absolute positioning */
 }
 
+/* Label for the toggle */
 .toggle-container label {
-  position: relative;
-  padding-left: 3.2rem;
-  cursor: pointer;
+    position: relative;
+    padding-left: 3.2rem; /* Space for the toggle button */
+    cursor: pointer;
 }
 
-.toggle-container label::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 2.4rem;
-  height: 1.2rem;
-  border-radius: 999px;
-  background: var(--color-surface-muted);
-  transform: translateY(-50%);
-  transition: background-color 0.2s ease;
-}
+    /* The toggle background */
+    .toggle-container label::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        width: 2.4rem;
+        height: 1.2rem;
+        border-radius: 999px;
+        background: var(--color-surface-muted);
+        transform: translateY(-50%);
+        transition: background-color 0.2s ease;
+    }
 
-.toggle-container label::after {
-  content: "";
-  position: absolute;
-  left: 0.15rem;
-  top: 50%;
-  width: 0.9rem;
-  height: 0.9rem;
-  border-radius: 50%;
-  background: var(--color-surface);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-  transform: translateY(-50%);
-  transition: transform 0.2s ease;
-}
+    /* The circle inside the toggle */
+    .toggle-container label::after {
+        content: "";
+        position: absolute;
+        left: 0.15rem;
+        top: 50%;
+        width: 0.9rem;
+        height: 0.9rem;
+        border-radius: 50%;
+        background: var(--color-surface);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+        transform: translateY(-50%);
+        transition: transform 0.2s ease;
+    }
 
+/* On checked state, change background and position of the circle */
 .toggle:checked + label::before {
-  background: var(--color-accent);
+    background: var(--color-accent);
 }
 
 .toggle:checked + label::after {
-  transform: translate(1.1rem, -50%);
+    transform: translate(1.1rem, -50%);
 }
 
+/* Focus state for accessibility */
 .toggle:focus-visible + label::before {
-  box-shadow: var(--focus-ring);
+    box-shadow: var(--focus-ring);
 }
